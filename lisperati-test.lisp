@@ -6,20 +6,41 @@
 (in-suite lisperati)
 
 (test no-substitution
-  (is (equal "blub" (insert-template (compile-template "blub")))))
+  (let ((templ "blub"))
+   (is (equal "blub" (insert-template (compile-template templ))))))
 
 (test with-subsititution
   (is (equal "blub1" (insert-template (compile-template "blub(=1)")))))
 
 (test with-binding
-  (let ((counter 2))
-    (is (equal "blub2" (insert-template (compile-template "blub(=counter)"))))))
+  (let* ((*counter* 2)
+        (template "blub(=*counter*)")
+         (compiled-template (compile-template template)))
+    (declare (special *counter*))
+    (is (equal "blub2" (insert-template compiled-template)))))
 
 (test multiple-substitution
-  (let ((counter 1))
+  (let ((*counter* 1))
+    (declare (special *counter*))
     (is (equal "blub1blub2blub3"
                (insert-template
                 (compile-template
-                 "blub(=counter)blub(=(incf counter))blub(=(incf counter))"))))))
+                 "blub(=*counter*)blub(=(incf *counter*))blub(=(incf *counter*))"))))))
+
+(test file-templates
+  (let ((compiled-template (compile-file-template (make-pathname
+                                                   :name "test.lr"
+                                                   :directory
+                                                   (pathname-directory
+                                                    (pathname
+                                                     (or *compile-file-truename*
+                                                         *load-truename*))))))
+        (*counter* 1))
+    (declare (special *counter*))
+    (is (equal "blub1" (insert-template compiled-template)))))
+
+(test relative-file
+  (is (equal "true" (get-whole-file-as-string (relative-file "relative.test"))))
+  (is (equal "true" (get-whole-file-as-string (relative-file "sub/sub_relative.test")))))
 
 (run!)
