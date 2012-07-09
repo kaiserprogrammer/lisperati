@@ -2,7 +2,6 @@
   (:use :cl :cl-ppcre)
   (:export
    :compile-template
-   :activate
    :insert-template
    :compile-file-template
    :relative-file
