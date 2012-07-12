@@ -27,6 +27,14 @@
                 (compile-template
                  "blub(=*counter*)blub(=(incf *counter*))blub(=(incf *counter*))"))))))
 
+(test lisp-mix
+  (is (equal
+       "<div class=\"1\"></div><div class=\"2\"></div><div class=\"3\"></div>"
+       (insert-template
+        (compile-template
+         "((loop for i in (list 1 2 3)
+              do (with-template <div class=\"(=i)\"></div>)))")))))
+
 (test file-templates
   (let ((compiled-template (compile-file-template (make-pathname
                                                    :name "test.lr"

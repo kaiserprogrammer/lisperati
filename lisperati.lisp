@@ -11,19 +11,48 @@
 (defun compile-file-template (file)
   (compile-template (get-whole-file-as-string (pathname file))))
 
-(defmacro compile-template (template)
-  `(let ((temp ,@(list template)))
-     `(concatenate 'string ,@(find-snippets temp))))
+(defun compile-template (template)
+  `(concatenate 'string ,@(find-snippets template)))
 
 (defun find-snippets (template)
-  (apply #'append (let ((found (scan "\\(=" template)))
-      (if found
-          (multiple-value-bind (exp length)
-              (read-from-string (subseq template (+ found 2)))
-            (list (list (subseq template 0 found)
-                        (list 'princ-to-string exp))
-                  (find-snippets (subseq template (+ found length 3)))))
-          (list (list template))))))
+  (apply
+   #'append
+   (let ((found (scan "(\\(=|\\(\\()" template)))
+     (if found
+         (let ((string-found (subseq template found (+ found 2))))
+           (if (string= string-found "(=")
+               (multiple-value-bind (exp length)
+                   (read-from-string (subseq template (+ found 2)))
+                 (print`((,(subseq template 0 found)
+                      (princ-to-string ,exp))
+                    ,(find-snippets (subseq template (+ found length 3))))))
+               (let ((template-found (scan "\\(with-template" template :start found)))
+                 (if template-found
+                     (multiple-value-bind (exp inner-length)
+                         (read-from-string (subseq template template-found))
+                       (let ((compiled-template
+                              (concatenate
+                               'string
+                               "(with-output-to-string (s) "
+                               (subseq template (1+ found) template-found)
+                               (format nil "(format s ~w)" (compile-template (subseq template (+ 15 template-found) (1- (+ template-found inner-length)))))
+                               (subseq template (+ template-found inner-length)))))
+                         (print compiled-template)
+                         (print template)
+                         (print (+ found inner-length))
+                         (multiple-value-bind (exp length)
+                             (read-from-string compiled-template)
+                           (print `((,(subseq template 0 found)
+                                     ,exp
+                                     ,@(find-snippets (subseq template (+ template-found inner-length 2)))))))))
+                     (multiple-value-bind (exp length)
+                         (read-from-string (subseq template found))
+                       (progn (print exp)
+                        `((,(subseq template 0 found)
+                            (with-output-to-string (s)
+                              ,exp)
+                            ,(find-snippets (subseq template (+ found length 2)))))))))))
+         (list (list template))))))
 
 (defun insert-template (compiled-template)
   (eval compiled-template))
@@ -44,3 +73,13 @@
    (pathname-directory
     (or *load-truename*
         *compile-file-truename*))))
+
+
+
+
+;; (with-output-to-string (s)
+;;   (loop for i in (list 1 2 3)
+;;      do (format s (concatenate 'string
+;;                                "<div class=\""
+;;                                (princ-to-string i)
+;;                                "\"></div>"))))
