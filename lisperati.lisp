@@ -38,16 +38,23 @@
                                'string
                                "(with-output-to-string (s) "
                                (subseq template (1+ found) template-found)
-                               (let ((blub (subseq template (+ 15 template-found) (1- (+ template-found inner-length)))))
+                               (let* ((offset (if (char= #\)
+                                                         (elt template (1- (+ template-found inner-length))))
+                                                  -1
+                                                  -2))
+                                      (blub (subseq template (+ 15 template-found) (+ offset (+ template-found inner-length)))))
                                  (format nil "(format s \"~~{~~a~~}\" ~w)"
                                          (cons 'list (find-snippets blub))))
                                (subseq template (+ template-found inner-length)))))
-                         (multiple-value-bind (exp length)
+                         (multiple-value-bind (exp clength)
                              (read-from-string compiled-template)
-                           (declare (ignore length))
-                           `((,(subseq template 0 found)
-                               ,exp
-                               ,@(find-snippets (subseq template (+ template-found inner-length 2))))))))
+                           (declare (ignore clength))
+                           (multiple-value-bind (whole length)
+                               (read-from-string (subseq template found))
+                             (declare (ignore whole))
+                            `((,(subseq template 0 found)
+                                ,exp
+                                ,@(find-snippets (subseq template (+ found length)))))))))
                      (multiple-value-bind (exp length)
                          (read-from-string (subseq template found))
                        `((,(subseq template 0 found)

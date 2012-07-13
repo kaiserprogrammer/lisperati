@@ -25,12 +25,23 @@
                (render-template (compile-template
                 "blub(=counter)blub(=(incf counter))blub(=(incf counter))"))))))
 
-(test lisp-mix
+(test lisp-loop
   (is (equal
        "<div class=\"1\"></div><div class=\"2\"></div><div class=\"3\"></div>"
-       (render-template (compile-template
-        "((loop for i in (list 1 2 3)
-              do (with-template <div class=\"(=i)\"></div>)))")))))
+       (render-template
+        (compile-template
+         "((loop for i in (list 1 2 3) do
+            (with-template <div class=\"(=i)\"></div>)))")))))
+
+(test lisp-if
+  (is (equal
+       "<img src=\"/path\" />"
+       (render-template
+        (compile-template
+         "((if (equal 'blub 'blub)
+              (with-template <img src=\"/path\" />)
+              (with-template
+                  \"Add Image\")))")))))
 
 (test file-templates
   (let ((*counter* 1))
