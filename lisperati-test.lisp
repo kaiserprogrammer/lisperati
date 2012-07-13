@@ -35,13 +35,31 @@
 
 (test lisp-if
   (is (equal
+       "<html></html>"
+       (render-template
+        (compile-template
+         "<html>((if (equal 'blub 'blub) \"a\" \"b\"))</html>"))))
+  (is (equal
        "<img src=\"/path\" />"
        (render-template
         (compile-template
          "((if (equal 'blub 'blub)
               (with-template <img src=\"/path\" />)
-              (with-template
-                  \"Add Image\")))")))))
+              (with-template Add Image)))"))))
+  (is (equal
+       "Add Image"
+       (render-template
+        (compile-template
+         "((if (equal 'false 'blub)
+              (with-template <img src=\"/path\" />)
+              (with-template Add Image)))"))))
+  (is (equal
+       "<html>Add Image</html>"
+       (render-template
+        (compile-template
+         "<html>((if (equal 'false 'blub)
+              (with-template <img src=\"/path\" />)
+              (with-template Add Image)))</html>")))))
 
 (test file-templates
   (let ((*counter* 1))
