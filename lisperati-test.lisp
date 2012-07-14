@@ -76,4 +76,11 @@
   (is (equal "true" (get-whole-file-as-string (relative-file "relative.test"))))
   (is (equal "true" (get-whole-file-as-string (relative-file "sub/sub_relative.test")))))
 
+(test inlining
+  (let ((temp 1))
+    (is (equal "blub1" (inline-template "blub(=temp)"))))
+  (let ((*counter* 1))
+    (is (equal "blub1"
+               (inline-file-template "test.lr")))))
+
 (run!)

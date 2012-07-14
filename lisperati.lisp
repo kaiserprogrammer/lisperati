@@ -5,7 +5,9 @@
    :render-template
    :compile-file-template
    :relative-file
-   :get-whole-file-as-string))
+   :get-whole-file-as-string
+   :inline-template
+   :inline-file-template))
 (in-package :lisperati)
 
 (defun compile-file-template (file)
@@ -15,6 +17,14 @@
 (defun compile-template (template)
   (let ((snippets (find-snippets template)))
     (compile nil `(lambda () (concatenate 'string ,@snippets)))))
+
+(defmacro inline-template (template)
+  (let ((snippets (find-snippets (eval template))))
+    `(concatenate 'string ,@snippets)))
+
+(defmacro inline-file-template (file)
+  (let ((snippets (find-snippets (get-whole-file-as-string (pathname (eval file))))))
+    `(concatenate 'string ,@snippets)))
 
 (defun find-snippets (template)
   (apply
