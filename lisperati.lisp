@@ -7,7 +7,11 @@
    :relative-file
    :get-whole-file-as-string
    :inline-template
-   :inline-file-template))
+   :inline-file-template
+   :defrenderer
+   :defrenderer-with-page
+   :define-renderer-with-page
+   :define-renderer))
 (in-package :lisperati)
 
 (defun compile-file-template (file)
@@ -65,10 +69,8 @@
       ,(find-snippets (subseq template (+ found length 3))))))
 
 (defun insert-logic-template (template found)
-  (multiple-value-bind (exp length)
-      (read-from-string (subseq template (1+ found)))
-    `((,(subseq template 0 found)
-        ,@(insert-recursive-template (subseq template found))))))
+  `((,(subseq template 0 found)
+      ,@(insert-recursive-template (subseq template found)))))
 
 (defun insert-recursive-template (template)
   (let ((compiled-template
@@ -104,3 +106,44 @@
              (format nil "(format s \"~~{~~a~~}\" ~w)"
                      (cons 'list (find-snippets blub)))
              (insert-inner-template (subseq template (+ 15 template-found (- (length blub) offset))))))))))
+
+(defvar *inner-template* nil)
+
+(defmacro defrenderer (dir)
+  (let ((files (mapcar #'princ-to-string (cl-fad:list-directory (eval dir)))))
+    (append (list'progn)
+            (loop for file in files
+               collect `(define-renderer ,file)))))
+
+(defmacro defrenderer-with-page (dir renderer &optional (template-in-renderer '*inner-template*))
+  (let ((files (mapcar #'princ-to-string (cl-fad:list-directory (eval dir)))))
+    (append (list'progn)
+            (loop for file in files
+               collect `(define-renderer-with-page ,file ,renderer ,template-in-renderer)))))
+
+(defmacro define-renderer-with-page (filename renderer &optional (template-in-renderer '*inner-template*))
+  (let ((fname (filename-to-renderer-name filename)))
+    `(let ((template (compile-file-template ,filename)))
+       (defun ,fname ()
+         (let ((,template-in-renderer template))
+           (funcall ,renderer))))))
+
+(defun filename-to-renderer-name (filename)
+  (let* ((file filename)
+       (dirs (split "/" file))
+       (dir (elt dirs (- (length dirs) 2)))
+       (action (elt (split "\\." (elt dirs (1- (length dirs)))) 0))
+       (fname (intern (string-upcase (concatenate 'string
+                                                  "render-"
+                                                  dir
+                                                  "-"
+                                                  action)))))
+    fname))
+
+(defmacro define-renderer (filename)
+  (let* ((fname (filename-to-renderer-name filename)))
+    `(let ((template (compile-file-template ,filename)))
+       (defun ,fname
+           ()
+         (render-template template)))))
+

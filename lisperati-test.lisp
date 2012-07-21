@@ -61,6 +61,8 @@
               (with-template <img src=\"/path\" />)
               (with-template Add Image)))</html>")))))
 
+(defvar *counter*)
+
 (test file-templates
   (let ((*counter* 1))
     (declare (special *counter*))
@@ -81,6 +83,6 @@
     (is (equal "blub1" (inline-template "blub(=temp)"))))
   (let ((*counter* 1))
     (is (equal "blub1"
-               (inline-file-template "test.lr")))))
+               (inline-file-template (relative-file "test.lr"))))))
 
 (run!)
