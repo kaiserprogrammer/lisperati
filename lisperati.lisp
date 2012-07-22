@@ -14,21 +14,27 @@
    :define-renderer))
 (in-package :lisperati)
 
+(defmacro fast-cat (&rest strings)
+  (let ((gstr (gensym)))
+   `(with-output-to-string (,gstr)
+      (dolist (s ,(cons 'list strings))
+        (write-string s ,gstr)))))
+
 (defun compile-file-template (file)
   (let ((content (get-whole-file-as-string (pathname file))))
     (compile-template content)))
 
 (defun compile-template (template)
   (let ((snippets (find-snippets template)))
-    (compile nil `(lambda () (concatenate 'string ,@snippets)))))
+    (compile nil `(lambda () (fast-cat ,@snippets)))))
 
 (defmacro inline-template (template)
   (let ((snippets (find-snippets (eval template))))
-    `(concatenate 'string ,@snippets)))
+    `(fast-cat ,@snippets)))
 
 (defmacro inline-file-template (file)
   (let ((snippets (find-snippets (get-whole-file-as-string (pathname (eval file))))))
-    `(concatenate 'string ,@snippets)))
+    `(fast-cat ,@snippets)))
 
 (defun find-snippets (template)
   (apply
