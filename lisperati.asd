@@ -7,5 +7,6 @@
   :author "Jürgen Bickert <juergenbickert@gmail.com>"
   :maintainer "Jürgen Bickert <juergenbickert@gmail.com>"
   :description "A fast templating engine"
-  :depends-on (:cl-ppcre)
+  :depends-on (:cl-ppcre
+               :cl-fad)
   :components ((:file "lisperati")))
