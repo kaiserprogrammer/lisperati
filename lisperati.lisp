@@ -15,13 +15,14 @@
 (in-package :lisperati)
 
 (defmacro fast-cat (&rest strings)
-  (let ((gstr (gensym)))
+  (let ((gstr (gensym))
+        (gs (gensym)))
    `(with-output-to-string (,gstr)
-      (dolist (s ,(cons 'list strings))
-        (write-string s ,gstr)))))
+      (dolist (,gs ,(cons 'list strings))
+        (write-string ,gs ,gstr)))))
 
 (defun compile-file-template (file)
-  (let ((content (get-whole-file-as-string (pathname file))))
+  (let ((content (get-whole-file-as-string (truename file))))
     (compile-template content)))
 
 (defun compile-template (template)
@@ -33,7 +34,7 @@
     `(fast-cat ,@snippets)))
 
 (defmacro inline-file-template (file)
-  (let ((snippets (find-snippets (get-whole-file-as-string (pathname (eval file))))))
+  (let ((snippets (find-snippets (get-whole-file-as-string (truename (eval file))))))
     `(fast-cat ,@snippets)))
 
 (defun find-snippets (template)
@@ -60,12 +61,14 @@
           text))))
 
 (defmacro relative-file (name)
-  `(make-pathname
-    :name ,name
-    :directory
-    (pathname-directory
-     (or ,*load-truename*
-         ,*compile-file-truename*))))
+  (princ-to-string
+   (truename
+    (make-pathname
+     :name (eval name)
+     :directory
+     (pathname-directory
+      (or *load-truename*
+          *compile-file-truename*))))))
 
 (defun insert-print-template (template found)
   (multiple-value-bind (exp length)
@@ -123,12 +126,12 @@
 
 (defmacro defrenderer-with-page (dir renderer &optional (template-in-renderer '*inner-template*))
   (let ((files (mapcar #'princ-to-string (cl-fad:list-directory (eval dir)))))
-    (append (list'progn)
-            (loop for file in files
-               collect `(define-renderer-with-page ,file ,renderer ,template-in-renderer)))))
+    (cons 'progn
+          (loop for file in files
+             collect `(define-renderer-with-page ,file ,renderer ,template-in-renderer)))))
 
 (defmacro define-renderer-with-page (filename renderer &optional (template-in-renderer '*inner-template*))
-  (let ((fname (filename-to-renderer-name filename)))
+  (let ((fname (filename-to-renderer-name (eval filename))))
     `(let ((template (compile-file-template ,filename)))
        (defun ,fname ()
          (let ((,template-in-renderer template))
@@ -147,7 +150,7 @@
     fname))
 
 (defmacro define-renderer (filename)
-  (let* ((fname (filename-to-renderer-name filename)))
+  (let* ((fname (filename-to-renderer-name (eval filename))))
     `(let ((template (compile-file-template ,filename)))
        (defun ,fname
            ()
