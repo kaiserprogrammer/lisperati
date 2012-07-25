@@ -16,10 +16,10 @@
            (lisperati::filename-to-renderer-name (relative-file "sub/sub_relative.test"))))
   (is (eql 'render-sub_relative
            (lisperati::filename-to-renderer-name (relative-file "sub/sub_relative.test")
-                                                 :length 0)))
+                                                 :dirs-in-name 0)))
   (is (eql 'render-lisperati-sub-sub_relative
            (lisperati::filename-to-renderer-name (relative-file "sub/sub_relative.test")
-                                                 :length 2))))
+                                                 :dirs-in-name 2))))
 
 (test renderer-generators-prefix
   (is (eql 'render-blub-sub-sub_relative
@@ -33,7 +33,7 @@
 (defvar *counter*)
 (test define-renderer
   (finishes
-    (define-renderer (relative-file "test.lr") :length 0)
+    (define-renderer (relative-file "test.lr") :dirs-in-name 0)
     (let ((*counter* 1))
       (is (string= "blub1" (render-test)))))
   (finishes
@@ -51,7 +51,7 @@
 
 (test defrenderer
   (finishes
-    (defrenderer "~/code/lisperati/sub/" :match ".*\\.test$" :prefix "blub" :postfix "defrenderer1" :length 2)
+    (defrenderer "~/code/lisperati/sub/" :match ".*\\.test$" :prefix "blub" :postfix "defrenderer1" :dirs-in-name 2)
     (is (string= "true" (render-blub-lisperati-sub-sub_relative-defrenderer1)))
     (is (string= "true" (render-blub-sub-sub-sub_relative-defrenderer1)))))
 
