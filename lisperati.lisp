@@ -70,9 +70,16 @@
       (or *load-truename*
           *compile-file-truename*))))))
 
+(defun eread-from-string (&rest args)
+  (handler-case
+      (apply #'read-from-string args)
+    (end-of-file (e)
+      (declare (ignore e))
+      (error (format nil "Missing close parent in ~a" (first args))))))
+
 (defun insert-print-template (template found)
   (multiple-value-bind (exp length)
-      (read-from-string (subseq template (+ found 2)))
+      (eread-from-string (subseq template (+ found 2)))
     `((,(subseq template 0 found)
         (princ-to-string ,exp))
       ,(find-snippets (subseq template (+ found length 3))))))
@@ -88,10 +95,10 @@
           "(with-output-to-string (s) "
           (insert-inner-template (subseq template 1)))))
     (multiple-value-bind (exp clength)
-        (read-from-string compiled-template)
+        (eread-from-string compiled-template)
       (declare (ignore clength))
       (multiple-value-bind (whole length)
-          (read-from-string template)
+          (eread-from-string template)
         (declare (ignore whole))
         `(,exp
           ,@(find-snippets (subseq template length)))))))
@@ -101,7 +108,7 @@
     (if (not template-found)
         template
         (multiple-value-bind (exp inner-length)
-            (read-from-string (subseq template template-found))
+            (eread-from-string (subseq template template-found))
           (declare (ignore exp))
           (let* ((offset (if (and (or (char= #\  (elt template (1- (+ template-found inner-length))))
                                       (char= #\Newline  (elt template (1- (+ template-found inner-length)))))
@@ -118,12 +125,6 @@
 
 (defvar *inner-template* nil)
 
-(defmacro defrenderer (dir)
-  (let ((files (mapcar #'princ-to-string (cl-fad:list-directory (eval dir)))))
-    (append (list'progn)
-            (loop for file in files
-               collect `(define-renderer ,file)))))
-
 (defmacro defrenderer-with-page (dir renderer &optional (template-in-renderer '*inner-template*))
   (let ((files (mapcar #'princ-to-string (cl-fad:list-directory (eval dir)))))
     (cons 'progn
@@ -137,22 +138,4 @@
          (let ((,template-in-renderer template))
            (funcall ,renderer))))))
 
-(defun filename-to-renderer-name (filename)
-  (let* ((file filename)
-       (dirs (split "/" file))
-       (dir (elt dirs (- (length dirs) 2)))
-       (action (elt (split "\\." (elt dirs (1- (length dirs)))) 0))
-       (fname (intern (string-upcase (concatenate 'string
-                                                  "render-"
-                                                  dir
-                                                  "-"
-                                                  action)))))
-    fname))
-
-(defmacro define-renderer (filename)
-  (let* ((fname (filename-to-renderer-name (eval filename))))
-    `(let ((template (compile-file-template ,filename)))
-       (defun ,fname
-           ()
-         (render-template template)))))
 
