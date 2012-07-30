@@ -61,14 +61,17 @@
           text))))
 
 (defmacro relative-file (name)
-  (princ-to-string
-   (truename
-    (make-pathname
-     :name (eval name)
-     :directory
-     (pathname-directory
-      (or *load-truename*
-          *compile-file-truename*))))))
+  (if (or *load-truename*
+          *compile-file-truename*)
+      (princ-to-string
+       (truename
+        (make-pathname
+         :name (eval name)
+         :directory
+         (pathname-directory
+          (or *load-truename*
+              *compile-file-truename*)))))
+      (princ-to-string name)))
 
 (defun eread-from-string (&rest args)
   (handler-case
