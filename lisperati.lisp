@@ -10,7 +10,7 @@
    :inline-file-template
    :defrenderer
    :defrenderer-with-page
-   :define-renderer-with-page
+   :define-renderer-with-inner-template
    :define-renderer))
 (in-package :lisperati)
 
@@ -130,12 +130,4 @@
     (cons 'progn
           (loop for file in files
              collect `(define-renderer-with-page ,file ,renderer ,template-in-renderer)))))
-
-(defmacro define-renderer-with-page (filename renderer &optional (template-in-renderer '*inner-template*))
-  (let ((fname (filename-to-renderer-name (eval filename))))
-    `(let ((template (compile-file-template ,filename)))
-       (defun ,fname ()
-         (let ((,template-in-renderer template))
-           (funcall ,renderer))))))
-
 

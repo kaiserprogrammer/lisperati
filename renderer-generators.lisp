@@ -25,6 +25,21 @@
             (loop for file in files
                collect `(define-renderer ,file :prefix ,prefix :postfix ,postfix :dirs-in-name ,dirs-in-name)))))
 
+(defmacro define-renderer-with-inner-template (outer-file inner-file
+                                               &key (dirs-in-name 1)
+                                                 (template-in-renderer '*inner-template*)
+                                                 prefix
+                                                 postfix)
+  (let ((fname (filename-to-renderer-name (eval inner-file) :dirs-in-name dirs-in-name :prefix prefix :postfix postfix))
+        (outer-fname (filename-to-renderer-name (eval outer-file))))
+    `(progn
+       (define-renderer ,outer-file)
+       (let ((template (compile-file-template ,inner-file)))
+         (defun ,fname ()
+           (let ((,template-in-renderer template))
+             (funcall (function ,outer-fname))))))))
+
+
 (defun list-all-files (directory &key (match "."))
   (remove-if-not
    (lambda (file) (scan match (princ-to-string file)))

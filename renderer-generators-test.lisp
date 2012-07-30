@@ -61,4 +61,22 @@
     (is (string= "true" (render-blub-lisperati-sub-sub_relative-defrenderer1)))
     (is (string= "true" (render-blub-sub-sub-sub_relative-defrenderer1)))))
 
+(test define-renderer-with-inner-template
+  (finishes
+    (fmakunbound 'render-rec-inner)
+    (define-renderer-with-inner-template "~/code/lisperati/outer.lr" "~/code/lisperati/rec/inner.lr")
+    (is (string= "outer inner outer" (render-rec-inner))))
+  (finishes
+    (fmakunbound 'render-inner)
+    (define-renderer-with-inner-template "~/code/lisperati/outer.lr" "~/code/lisperati/rec/inner.lr" :dirs-in-name 0)
+    (is (string= "outer inner outer" (render-inner))))
+  (finishes
+    (fmakunbound 'render-blub-inner)
+    (define-renderer-with-inner-template "~/code/lisperati/outer.lr" "~/code/lisperati/rec/inner.lr" :dirs-in-name 0 :prefix "blub")
+    (is (string= "outer inner outer" (render-blub-inner))))
+  (finishes
+    (fmakunbound 'render-inner-blub)
+    (define-renderer-with-inner-template "~/code/lisperati/outer.lr" "~/code/lisperati/rec/inner.lr" :dirs-in-name 0 :postfix "blub")
+    (is (string= "outer inner outer" (render-inner-blub)))))
+
 (run!)
