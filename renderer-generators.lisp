@@ -22,7 +22,7 @@
          (render-template template)))))
 
 (defmacro defrenderer (directory &key match prefix postfix (dirs-in-name 1))
-  (let ((files (mapcar #'princ-to-string (list-all-files directory :match match))))
+  (let ((files (mapcar #'princ-to-string (list-all-files (eval directory) :match match))))
     (append (list'progn)
             (loop for file in files
                collect `(define-renderer ,file :prefix ,prefix :postfix ,postfix :dirs-in-name ,dirs-in-name)))))
@@ -47,7 +47,7 @@
                                              prefix
                                              postfix
                                              (dirs-in-name 1))
-  (let ((files (mapcar #'princ-to-string (list-all-files (eval inner-files) :match match))))
+  (let ((files (mapcar #'princ-to-string (list-all-files (eval inner-files) :match (eval match) :exclude (truename (eval outer-file))))))
     (cons 'progn
           (loop for file in files
              collect `(define-renderer-with-inner-template ,outer-file ,file
@@ -56,12 +56,14 @@
                         :postfix ,postfix
                         :dirs-in-name ,dirs-in-name)))))
 
-(defun list-all-files (directory &key (match "."))
-  (remove-if-not
-   (lambda (file) (scan match (princ-to-string file)))
-   (let ((dirs))
-     (cl-fad:walk-directory
-      (eval directory)
-      (lambda (dir)
-        (push dir dirs)))
-     dirs)))
+(defun list-all-files (directory &key (match ".") exclude)
+  (let ((files))
+    (cl-fad:walk-directory
+     directory
+     (lambda (file)
+       (when (and
+              (scan match (princ-to-string file))
+              (or (not exclude)
+                  (not (scan (princ-to-string exclude) (princ-to-string file)))))
+         (push file files))))
+    files))

@@ -64,19 +64,19 @@
 (test define-renderer-with-inner-template
   (finishes
     (fmakunbound 'render-rec-inner)
-    (define-renderer-with-inner-template "~/code/lisperati/outer.lr" "~/code/lisperati/rec/inner.lr")
+    (define-renderer-with-inner-template (relative-file "outer.lr") (relative-file "rec/inner.lr"))
     (is (string= "outer inner outer" (render-rec-inner))))
   (finishes
     (fmakunbound 'render-inner)
-    (define-renderer-with-inner-template "~/code/lisperati/outer.lr" "~/code/lisperati/rec/inner.lr" :dirs-in-name 0)
+    (define-renderer-with-inner-template (relative-file "outer.lr") (relative-file "rec/inner.lr") :dirs-in-name 0)
     (is (string= "outer inner outer" (render-inner))))
   (finishes
     (fmakunbound 'render-blub-inner)
-    (define-renderer-with-inner-template "~/code/lisperati/outer.lr" "~/code/lisperati/rec/inner.lr" :dirs-in-name 0 :prefix "blub")
+    (define-renderer-with-inner-template (relative-file "outer.lr") (relative-file "rec/inner.lr") :dirs-in-name 0 :prefix "blub")
     (is (string= "outer inner outer" (render-blub-inner))))
   (finishes
     (fmakunbound 'render-inner-blub)
-    (define-renderer-with-inner-template "~/code/lisperati/outer.lr" "~/code/lisperati/rec/inner.lr" :dirs-in-name 0 :postfix "blub")
+    (define-renderer-with-inner-template (relative-file "outer.lr") (relative-file "rec/inner.lr") :dirs-in-name 0 :postfix "blub")
     (is (string= "outer inner outer" (render-inner-blub)))))
 
 (test defrenderer-with-inner-template
@@ -87,5 +87,11 @@
         (relative-file "sub") :match ".*\\.test$" :prefix "blub" :postfix "defrenderer1" :dirs-in-name 2)
     (is (string= "outer true outer" (render-blub-lisperati-sub-sub_relative-defrenderer1)))
     (is (string= "outer true outer" (render-blub-sub-sub-sub_relative-defrenderer1)))))
+
+(test defrenderer-does-not-recursive-define-outer-renderer
+  (finishes
+    (fmakunbound 'render-outer)
+    (defrenderer-with-inner-template "~/code/lisperati/outer.lr" "~/code/lisperati/" :dirs-in-name 0 :match "outer\\.lr$")
+    (is (not (fboundp 'render-outer)))))
 
 (run!)
