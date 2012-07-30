@@ -1,5 +1,7 @@
 (in-package :lisperati)
 
+(defvar *inner-template* nil)
+
 (defun filename-to-renderer-name (filename &key (dirs-in-name 1) prefix postfix)
   (let* ((file (princ-to-string (truename filename)))
          (dirs (split "/" file))
@@ -39,6 +41,20 @@
            (let ((,template-in-renderer template))
              (funcall (function ,outer-fname))))))))
 
+(defmacro defrenderer-with-inner-template (outer-file inner-files
+                                           &key (template-in-renderer '*inner-template*)
+                                             match
+                                             prefix
+                                             postfix
+                                             (dirs-in-name 1))
+  (let ((files (mapcar #'princ-to-string (list-all-files (eval inner-files) :match match))))
+    (cons 'progn
+          (loop for file in files
+             collect `(define-renderer-with-inner-template ,outer-file ,file
+                        :template-in-renderer ,template-in-renderer
+                        :prefix ,prefix
+                        :postfix ,postfix
+                        :dirs-in-name ,dirs-in-name)))))
 
 (defun list-all-files (directory &key (match "."))
   (remove-if-not

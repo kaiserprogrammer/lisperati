@@ -9,7 +9,7 @@
    :inline-template
    :inline-file-template
    :defrenderer
-   :defrenderer-with-page
+   :defrenderer-with-inner-template
    :define-renderer-with-inner-template
    :define-renderer))
 (in-package :lisperati)
@@ -122,12 +122,4 @@
              (format nil "(format s \"~~{~~a~~}\" ~w)"
                      (cons 'list (find-snippets blub)))
              (insert-inner-template (subseq template (+ 15 template-found (- (length blub) offset))))))))))
-
-(defvar *inner-template* nil)
-
-(defmacro defrenderer-with-page (dir renderer &optional (template-in-renderer '*inner-template*))
-  (let ((files (mapcar #'princ-to-string (cl-fad:list-directory (eval dir)))))
-    (cons 'progn
-          (loop for file in files
-             collect `(define-renderer-with-page ,file ,renderer ,template-in-renderer)))))
 

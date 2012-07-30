@@ -79,4 +79,13 @@
     (define-renderer-with-inner-template "~/code/lisperati/outer.lr" "~/code/lisperati/rec/inner.lr" :dirs-in-name 0 :postfix "blub")
     (is (string= "outer inner outer" (render-inner-blub)))))
 
+(test defrenderer-with-inner-template
+  (finishes
+    (fmakunbound 'render-blub-lisperati-sub-sub_relative-defrenderer1)
+    (fmakunbound 'render-blub-sub-sub-sub_relative-defrenderer1)
+    (defrenderer-with-inner-template (relative-file "outer.lr")
+        (relative-file "sub") :match ".*\\.test$" :prefix "blub" :postfix "defrenderer1" :dirs-in-name 2)
+    (is (string= "outer true outer" (render-blub-lisperati-sub-sub_relative-defrenderer1)))
+    (is (string= "outer true outer" (render-blub-sub-sub-sub_relative-defrenderer1)))))
+
 (run!)
