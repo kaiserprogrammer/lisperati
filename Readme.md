@@ -67,3 +67,30 @@ Templating works in to ways you can either insert the result of the expression w
 
 When using (expr) only the text following after **with-template** will be inserted.
 Notice how you can freely mix (=expr), (expr) and with-template, which is also a means of escaping
+
+## Render Procedures
+
+When working with lisperati i noticed a common pattern, that i would compile a template and save it in a special variable and define a procedure to render that template, so here you go a macro which defines these procedures. Since these templates are compiled they only work with special variables
+
+```lisp
+(defvar *counter*) ;; special variable
+
+(define-renderer "/path/to/file")
+;; (render-to-file)
+
+(define-renderer "/path/to/file" :dirs-in-name 0)
+;; (render-file)
+
+(define-renderer "/path/to/file" :dirs-in-name 2 :prefix "lisperati")
+;; (render-lisperati-path-to-file)
+```
+
+If you have many templates it would be tedious to define all, so you could use defrenderer instead of define-renderer. The former works with directories and accepst a regex for matching the latter works only on one file.
+
+```lisp
+(defrenderer "/path/to/directory")
+;; all files in that directory should be lisperati compatible templates
+
+(defrenderer "/path/to/directory" :match "^.*\\.lr$")
+;; for all files ending with .lr render functions are defined
+```
