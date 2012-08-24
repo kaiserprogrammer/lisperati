@@ -94,3 +94,25 @@ If you have many templates it would be tedious to define all, so you could use d
 (defrenderer "/path/to/directory" :match "^.*\\.lr$")
 ;; for all files ending with .lr render functions are defined
 ```
+
+Maybe you want to use a template inside another template, well that's easy you just render the appropriate template inside the outer template. Also there is a macro which does that for you. But you still have to say when you want the template to be rendered with
+```lisp
+(=(render-template lisperati::*inner-template*))
+```
+
+Then you can define a render procedure just with the following
+
+```lisp
+(define-renderer-with-inner-template "path/to/outer/file" "path/to/inner/file")
+;; (render-inner-file)
+```
+
+You have one application template and all others are inner templates. No problem.
+```lisp
+(defrenderer-with-inner-template "path/to/outer/file" "path/to/directory/")
+;; many render procedures defined
+```
+
+[Web App with lisperati][]
+[Web App with lisperati]: https://github.com/simpleprogrammer/cl-quacks-web
+
