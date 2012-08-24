@@ -10,8 +10,8 @@ When inlining you can use the variables in lexical scope.
 
 ```lisp
 (let ((count 1))
-  (inline-template "count is (=count)"))
-;; => "count is 1"
+  (inline-template "count is (=(float count))"))
+;; => "count is 1.0"
 ```
 
 You could also inline a file template.
@@ -43,3 +43,26 @@ You can also compile file templates, again here you can only refer to special va
       (compiled-template (compile-file-template "/path/to/file/")))
   (render-template compiled-template))
 ```
+
+## Templating
+
+Templating works in to ways you can either insert the result of the expression with "(=expr)" or have a more advanced control-structure with "(expr)"
+
+### (=expr)
+
+```lisp
+(let ((count 0))
+  (inline-template "i have (=count) cat(=(if (= 1 count) \"\" \"s\"))"))
+;; => "i have 0 cats"
+```
+
+### (expr) and with-template
+
+```lisp
+(let ((count 0))
+  (lisperati:inline-template
+"i have ((with-template (=count)))  cat((if (not (= 1 count)) (with-template s)))"))
+;; => "i have 0 cats"
+```
+
+Notice how you can freely mix (=expr), (expr) and with-template, which is also a means of escaping
