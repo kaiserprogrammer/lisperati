@@ -113,6 +113,8 @@ You have one application template and all others are inner templates. No problem
 ;; many render procedures defined
 ```
 
-[Web App with lisperati][]
-[Web App with lisperati]: https://github.com/simpleprogrammer/cl-quacks-web
+Example Web App:
+[Quacks][]
+
+[Quacks]: https://github.com/simpleprogrammer/cl-quacks-web/blob/master/quacks-web.lisp
 
