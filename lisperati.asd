@@ -9,4 +9,5 @@
   :description "A fast templating engine"
   :depends-on (:cl-ppcre
                :cl-fad)
-  :components ((:file "lisperati")))
+  :components ((:file "lisperati")
+               (:file "renderer-generators")))
