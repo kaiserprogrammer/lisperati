@@ -23,7 +23,7 @@ You could also inline a file template.
 
 ## Compiling
 
-When compiling you can only use special variables most of the time denoted with *earmuffs*. When a template is compiled you can render it with render-template.
+When compiling you can only use special variables most of the time denoted with **earmuffs**. When a template is compiled you can render it with render-template.
 
 ```lisp
 (defvar *count*) ;; declare special variable
