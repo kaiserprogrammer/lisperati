@@ -1,6 +1,6 @@
 # lisperati
 
-is a fast templating engine
+is a fast lisp-like-looking templating engine
 
 You can either inline templates in your code or you can compile and reuse the templates when rendering.
 
