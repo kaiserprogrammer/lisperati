@@ -65,4 +65,5 @@ Templating works in to ways you can either insert the result of the expression w
 ;; => "i have 0 cats"
 ```
 
+When using (expr) only the text following after **with-template** will be inserted.
 Notice how you can freely mix (=expr), (expr) and with-template, which is also a means of escaping
